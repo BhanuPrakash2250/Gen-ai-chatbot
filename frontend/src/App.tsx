@@ -14,14 +14,6 @@ import {
   FaPlus,
 } from "react-icons/fa";
 
-import {
-  Prism as SyntaxHighlighter,
-} from "react-syntax-highlighter";
-
-import {
-  oneDark,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
-
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://gen-ai-chatbot-production-79db.up.railway.app";
@@ -34,6 +26,7 @@ type Message = {
 
 declare global {
   interface Window {
+    SpeechRecognition: any;
     webkitSpeechRecognition: any;
   }
 }
@@ -41,22 +34,16 @@ declare global {
 export default function App() {
 
   const [question, setQuestion] = useState("");
-
   const [messages, setMessages] = useState<Message[]>([]);
-
   const [loading, setLoading] = useState(false);
-
   const [darkMode, setDarkMode] = useState(true);
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
 
-    const saved = localStorage.getItem(
-      "chat_history"
-    );
+    const saved = localStorage.getItem("chat_history");
 
     if (saved) {
       setMessages(JSON.parse(saved));
@@ -83,7 +70,7 @@ export default function App() {
 
     if (!finalQuestion.trim()) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       role: "user",
       content: finalQuestion,
       time: new Date().toLocaleTimeString(),
@@ -104,7 +91,7 @@ export default function App() {
         }
       );
 
-      const aiMessage = {
+      const aiMessage: Message = {
         role: "assistant",
         content: res.data.answer,
         time: new Date().toLocaleTimeString(),
@@ -130,7 +117,6 @@ export default function App() {
   const clearChat = () => {
 
     setMessages([]);
-
     localStorage.removeItem("chat_history");
   };
 
@@ -141,8 +127,16 @@ export default function App() {
 
   const startVoiceInput = () => {
 
-    const recognition =
-      new window.webkitSpeechRecognition();
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Voice recognition not supported");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
 
     recognition.lang = "en-US";
 
@@ -158,58 +152,28 @@ export default function App() {
 
   return (
 
-    <div
-      className={`h-screen flex overflow-hidden relative ${
-        darkMode
-          ? "bg-[#0B1120] text-white"
-          : "bg-gray-100 text-black"
-      }`}
-    >
-
-      {/* BACKGROUND */}
-
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/20 blur-[140px] rounded-full"></div>
-
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-500/20 blur-[140px] rounded-full"></div>
-
-      {/* MOBILE OVERLAY */}
-
-      {sidebarOpen && (
-
-        <div
-          onClick={() =>
-            setSidebarOpen(false)
-          }
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-        />
-
-      )}
+    <div className={`h-screen flex overflow-hidden ${
+      darkMode
+        ? "bg-[#0B1120] text-white"
+        : "bg-gray-100 text-black"
+    }`}>
 
       {/* SIDEBAR */}
 
-      <div
-        className={`fixed md:relative z-50 md:z-0 h-full w-80 transform transition-transform duration-300 ${
-          sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full md:translate-x-0"
-        } ${
-          darkMode
-            ? "bg-[#111827]/80 border-zinc-800"
-            : "bg-white border-gray-300"
-        } border-r backdrop-blur-2xl flex flex-col`}
-      >
+      <div className={`${
+        sidebarOpen
+          ? "translate-x-0"
+          : "-translate-x-full md:translate-x-0"
+      } fixed md:relative z-50 h-full w-80 transition-transform duration-300 border-r border-white/10 bg-[#111827]/80 backdrop-blur-2xl flex flex-col`}>
 
         <div className="p-5 flex items-center justify-between border-b border-white/10">
 
           <button
             onClick={clearChat}
-            className="flex items-center gap-3 bg-white text-black px-5 py-3 rounded-2xl font-semibold hover:scale-[1.02] transition-all"
+            className="flex items-center gap-3 bg-white text-black px-5 py-3 rounded-2xl font-semibold"
           >
-
             <FaPlus />
-
             New Chat
-
           </button>
 
           <button
@@ -218,22 +182,12 @@ export default function App() {
             }
             className="p-3 rounded-xl bg-white/10"
           >
-
-            {darkMode
-              ? <FaSun />
-              : <FaMoon />}
-
+            {darkMode ? <FaSun /> : <FaMoon />}
           </button>
 
         </div>
 
-        {/* HISTORY */}
-
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-
-          <h2 className="text-sm uppercase tracking-widest text-zinc-500 mb-4">
-            Recent Chats
-          </h2>
 
           {messages
             .filter((msg) => msg.role === "user")
@@ -246,14 +200,10 @@ export default function App() {
                 onClick={() =>
                   setQuestion(msg.content)
                 }
-                className={`w-full text-left p-4 rounded-2xl transition-all hover:scale-[1.02] ${
-                  darkMode
-                    ? "bg-white/5 hover:bg-white/10 border border-white/10"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
+                className="w-full text-left p-4 rounded-2xl bg-white/5 hover:bg-white/10 transition"
               >
 
-                <p className="truncate text-sm font-medium">
+                <p className="truncate text-sm">
                   {msg.content}
                 </p>
 
@@ -271,11 +221,11 @@ export default function App() {
 
       {/* MAIN */}
 
-      <div className="flex-1 flex flex-col relative z-10">
+      <div className="flex-1 flex flex-col">
 
         {/* HEADER */}
 
-        <div className="border-b border-white/10 backdrop-blur-xl px-5 py-4 flex items-center gap-4">
+        <div className="border-b border-white/10 px-5 py-4 flex items-center gap-4">
 
           <button
             onClick={() =>
@@ -296,51 +246,27 @@ export default function App() {
 
         <div className="flex-1 overflow-y-auto px-4 py-8">
 
-          {messages.length === 0 && (
-
-            <div className="h-full flex flex-col items-center justify-center">
-
-              <div className="bg-white/10 border border-white/10 backdrop-blur-2xl p-8 rounded-full mb-8">
-
-                <FaRobot size={60} />
-
-              </div>
-
-              <h1 className="text-6xl font-bold mb-4 text-center">
-                Ask Anything
-              </h1>
-
-              <p className="text-zinc-400 text-xl mb-10">
-                AI assistant for modern workflows
-              </p>
-
-              <div className="grid md:grid-cols-2 gap-4 max-w-3xl w-full">
-
-                {[
-                  "Build React dashboard UI",
-                  "Generate FastAPI API",
-                  "Explain LangChain",
-                  "Optimize SQL query",
-                ].map((item, i) => (
-
-                  <button
-                    key={i}
-                    onClick={() =>
-                      askAI(item)
-                    }
-                    className="bg-white/5 border border-white/10 backdrop-blur-xl p-5 rounded-2xl hover:scale-[1.02] hover:bg-white/10 transition-all text-left"
-                  >
-                    {item}
-                  </button>
-
-                ))}
-
-              </div>
-
-            </div>
-          )}
-
           <div className="max-w-5xl mx-auto space-y-8">
+
+            {messages.length === 0 && (
+
+              <div className="text-center mt-32">
+
+                <FaRobot
+                  size={60}
+                  className="mx-auto mb-6"
+                />
+
+                <h1 className="text-6xl font-bold mb-4">
+                  Ask Anything
+                </h1>
+
+                <p className="text-zinc-400">
+                  Your AI assistant is ready
+                </p>
+
+              </div>
+            )}
 
             {messages.map((msg, index) => (
 
@@ -353,13 +279,11 @@ export default function App() {
                 }`}
               >
 
-                <div
-                  className={`max-w-3xl rounded-3xl px-6 py-5 shadow-2xl ${
-                    msg.role === "user"
-                      ? "bg-blue-600"
-                      : "bg-white/10 backdrop-blur-2xl border border-white/10"
-                  }`}
-                >
+                <div className={`max-w-3xl rounded-3xl px-6 py-5 ${
+                  msg.role === "user"
+                    ? "bg-blue-600"
+                    : "bg-white/10 border border-white/10"
+                }`}>
 
                   <div className="flex gap-4">
 
@@ -373,29 +297,9 @@ export default function App() {
 
                     <div className="flex-1">
 
-                      <div className="prose prose-invert max-w-none">
-
-                        <ReactMarkdown
-                          components={{
-                            code({
-                              children,
-                            }) {
-
-                              return (
-                                <SyntaxHighlighter
-                                  style={oneDark}
-                                  language="javascript"
-                                >
-                                  {String(children)}
-                                </SyntaxHighlighter>
-                              );
-                            },
-                          }}
-                        >
-                          {msg.content}
-                        </ReactMarkdown>
-
-                      </div>
+                      <ReactMarkdown>
+                        {msg.content}
+                      </ReactMarkdown>
 
                       <div className="flex items-center justify-between mt-4 text-xs text-zinc-400">
 
@@ -407,7 +311,6 @@ export default function App() {
                             onClick={() =>
                               copyMessage(msg.content)
                             }
-                            className="hover:text-white"
                           >
                             <FaCopy />
                           </button>
@@ -428,23 +331,10 @@ export default function App() {
 
             {loading && (
 
-              <div className="flex justify-start">
-
-                <div className="bg-white/10 backdrop-blur-xl border border-white/10 px-6 py-5 rounded-3xl">
-
-                  <div className="flex gap-2">
-
-                    <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
-
-                    <span className="w-2 h-2 bg-white rounded-full animate-bounce delay-100"></span>
-
-                    <span className="w-2 h-2 bg-white rounded-full animate-bounce delay-200"></span>
-
-                  </div>
-
-                </div>
-
+              <div className="text-zinc-400">
+                Thinking...
               </div>
+
             )}
 
             <div ref={messagesEndRef}></div>
@@ -457,11 +347,11 @@ export default function App() {
 
         <div className="p-6">
 
-          <div className="max-w-5xl mx-auto rounded-[30px] bg-white/10 backdrop-blur-2xl border border-white/10 shadow-2xl flex items-center gap-4 px-5 py-4">
+          <div className="max-w-5xl mx-auto rounded-[30px] bg-white/10 border border-white/10 flex items-center gap-4 px-5 py-4">
 
             <button
               onClick={startVoiceInput}
-              className="text-zinc-400 hover:text-white"
+              className="text-zinc-400"
             >
               <FaMicrophone />
             </button>
@@ -483,7 +373,7 @@ export default function App() {
               onClick={() =>
                 askAI()
               }
-              className="bg-white text-black p-4 rounded-2xl hover:scale-110 transition-all"
+              className="bg-white text-black p-4 rounded-2xl"
             >
               <FaPaperPlane />
             </button>

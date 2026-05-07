@@ -1,0 +1,27 @@
+# Core RAG stack
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-openai==0.1.25
+faiss-cpu==1.8.0
+openai==1.50.0
+
+# Document loaders
+pypdf==4.3.1
+unstructured==0.15.13
+
+# API
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+pydantic==2.9.2
+
+# Evaluation
+ragas==0.1.21
+datasets==3.0.1
+
+# Testing
+pytest==8.3.3
+httpx==0.27.2
+
+# Utils
+python-dotenv==1.0.1

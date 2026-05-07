@@ -7,7 +7,6 @@ openai==1.50.0
 
 # Document loaders
 pypdf==4.3.1
-unstructured==0.15.13
 
 # API
 fastapi==0.115.0

@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-
 import axios from "axios";
-
 import ReactMarkdown from "react-markdown";
 
 import {
@@ -23,6 +21,10 @@ import {
 import {
   oneDark,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
+
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://gen-ai-chatbot-production-79db.up.railway.app";
 
 type Message = {
   role: string;
@@ -96,7 +98,7 @@ export default function App() {
     try {
 
       const res = await axios.post(
-        "http://127.0.0.1:8000/query",
+        `${API_URL}/query`,
         {
           question: finalQuestion,
         }
@@ -164,7 +166,7 @@ export default function App() {
       }`}
     >
 
-      {/* GLOW BACKGROUND */}
+      {/* BACKGROUND */}
 
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/20 blur-[140px] rounded-full"></div>
 
@@ -285,7 +287,7 @@ export default function App() {
           </button>
 
           <h1 className="text-2xl font-bold">
-             Lumina AI
+            Lumina AI
           </h1>
 
         </div>
@@ -311,8 +313,6 @@ export default function App() {
               <p className="text-zinc-400 text-xl mb-10">
                 AI assistant for modern workflows
               </p>
-
-              {/* SUGGESTIONS */}
 
               <div className="grid md:grid-cols-2 gap-4 max-w-3xl w-full">
 
@@ -425,8 +425,6 @@ export default function App() {
               </div>
 
             ))}
-
-            {/* LOADING */}
 
             {loading && (
 

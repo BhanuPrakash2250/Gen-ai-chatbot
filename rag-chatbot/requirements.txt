@@ -1,4 +1,5 @@
 langchain==0.2.16
+langchain-groq==0.1.9
 langchain-community==0.2.16
 langchain-openai==0.1.25
 faiss-cpu==1.12.0

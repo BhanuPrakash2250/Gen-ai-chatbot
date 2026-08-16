@@ -16,7 +16,7 @@ import {
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "https://gen-ai-chatbot-production-79db.up.railway.app";
+  "https://gen-ai-chatbot-1-1car.onrender.com";
 
 type Message = {
   role: string;
